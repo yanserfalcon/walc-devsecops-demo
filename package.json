@@ -1,0 +1,8 @@
+{
+  "name": "walc-interactive-demo",
+  "version": "1.0.0",
+  "description": "Aplicación interactiva para la demo de DevSecOps en WALC",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "dependencies": { "express": "^4.18.2" }
+}
