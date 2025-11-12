@@ -1,11 +1,34 @@
-name: CI - Build and Push Docker Image
+name: CI - Build, Scan, and Push Docker Image
 
 on:
   push:
     branches: [ "main" ]
 
 jobs:
+  # ------ NUEVO TRABAJO: El Guardián de Código (SAST) ------
+  sast-scan:
+    name: SAST Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+
+      # Escaneamos el código fuente buscando secretos ANTES de construir nada.
+      - name: Run Trivy filesystem scan for secrets
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'              # Escanea el sistema de archivos
+          scan-ref: '.'                # Escanea todo el directorio
+          exit-code: '1'               # Falla el pipeline si encuentra algo
+          severity: 'CRITICAL'         # Busca problemas de severidad CRÍTICA
+          # Le decimos a Trivy que use nuestro archivo de reglas personalizadas
+          trivy-config: trivy-secret.yaml
+
+  # ------ TRABAJO MODIFICADO: Ahora depende del éxito del guardián ------
   build-and-push:
+    # ¡Esta línea es la clave! El trabajo solo se ejecutará si 'sast-scan' tiene éxito.
+    needs: sast-scan
+    
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
